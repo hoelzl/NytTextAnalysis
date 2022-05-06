@@ -37,14 +37,14 @@ directories with (at least) the following keys:
   "nytext": {
     "app-id": "xxx",
     "api-key": "yyy",
-    "data-dir": "path-to-directory-where-data-can-be-stored",
-    "news-dir": "C:/Users/tc/Programming/Python/Tests/NytTextAnalysis/data/news",
+    "data-dir": "path-to-directory-where-data-for-local-analysis-can-be-stored",
+    "news-dir": "path-to-directory-where-data-for-the-local-server-can-be-stored",
     "url": "https://api.nytimes.com/svc/archive/v1/{year}/{month}.json"
   }
 }
 ```
 
-## Downloading data from a server
+## Downloading data from a remote server
 
 See `nytext --help`. In particular
 
@@ -64,6 +64,13 @@ downloads data from the remote server into the directory where the local server
 expects it. (You probably want to define the `news-dir` entry in the
 configuration file for this, otherwise the program tries to write the data into
 the `nytext` installation directory, which may not worked for installed builds.)
+
+## Extracting some information from the downloaded data
+
+This is best done inside a Python shell or notebook. Import the module
+`nytext.analysis` and call some of the functions defined there. Look into the
+module for examples. They are in the cells guarded with `session.is_interactive`
+or inside calls to  `(p)print_interactive()`.
 
 ## Running a local server
 

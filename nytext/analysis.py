@@ -7,7 +7,8 @@ from nbex.interactive import session, print_interactive, pprint_interactive, ppr
 from collections import Counter
 
 # %%
-data = load_or_download_archive_data()
+if session.is_interactive:
+	data = load_or_download_archive_data()
 
 
 # %%
