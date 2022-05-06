@@ -3,8 +3,8 @@ import json
 from pathlib import Path
 
 import requests
-from nbex.interactive import session, pprint_interactive
-from nytext.config import load_configuration
+from nbex.interactive import session, print_interactive, pprint_interactive
+from nytext.config import load_configuration, get_archive_file_path
 
 # %%
 config = load_configuration()
@@ -12,14 +12,15 @@ project_data = config["nytext"]
 app_id = project_data["app-id"]
 api_key = project_data["api-key"]
 data_dir_path = Path(project_data["data-dir"])
+url_str = project_data["url"]
 
 
 # %%
 def download_raw_archive_data_for_month(year, month):
-    assert year >= 1851
-    assert 1 <= month <= 12
+    # assert year >= 1851
+    # assert 1 <= month <= 12
     return requests.get(
-        f"https://api.nytimes.com/svc/archive/v1/{year}/{month}.json",
+        url_str.format(year=year, month=month),
         params={"api-key": api_key},
     )
 
@@ -66,19 +67,25 @@ def generate_date_range(start_year, start_month, end_year, end_month):
         for year in range(start_year, end_year + 1)
         for month in range(1, 13)
         if (
-                (start_year < year < end_year)
-                or (year == start_year and month >= start_month)
-                or (year == end_year and month <= end_month)
+            (start_year == end_year and start_month <= month <= end_month)
+            or (
+                start_year < end_year
+                and (
+                    (start_year < year < end_year)
+                    or (year == start_year and month >= start_month)
+                    or (year == end_year and month <= end_month)
+                )
+            )
         )
     )
 
 
 # %%
-pprint_interactive(generate_date_range(2021, 4, 2022, 4))
+print_interactive(generate_date_range(2021, 4, 2022, 4))
+print_interactive(generate_date_range(2021, 1, 2021, 4))
 
 # %%
 default_date_range = generate_date_range(2021, 1, 2022, 4)
-
 
 # %%
 # This will issue a rather large number of requests.
@@ -88,10 +95,11 @@ default_date_range = generate_date_range(2021, 1, 2022, 4)
 # else:
 #     large_archive_data = globals()["large_archive_data"]
 
-
 # %%
+
+
 def write_archive_data(
-        data, output_path: Path = data_dir_path / "archive_data.json", indent=2
+    data, output_path: Path = data_dir_path / "archive_data.json", indent=2
 ):
     output_path.parent.mkdir(exist_ok=True, parents=True)
     with open(output_path, "w", encoding="utf-8") as file:
@@ -110,8 +118,8 @@ if session.is_interactive:
 
 # %%
 def load_or_download_archive_data(
-        local_path: Path = data_dir_path / "archive_data.json",
-        months=default_date_range):
+    local_path: Path = data_dir_path / "archive_data.json", months=default_date_range
+):
     if local_path.exists():
         with open(local_path, "r", encoding="utf-8") as file:
             return json.load(file)
@@ -125,3 +133,27 @@ def load_or_download_archive_data(
 if session.is_interactive:
     large_archive_data = load_or_download_archive_data()
     print(f"Archive data has {len(large_archive_data)} entries.")
+
+# %%
+session.forced_interactive_value = None
+
+
+# %%
+def download_and_save_raw_archive_data(months):
+    for year, month in months:
+        print(f"Downloading raw archive data for {year}/{month}.")
+        response = download_raw_archive_data_for_month(year, month)
+        if 200 <= response.status_code < 300:
+            path = get_archive_file_path(year, month, check_path_exists=False)
+            path.parent.mkdir(exist_ok=True, parents=True)
+            print(f"  Writing to {path}.")
+            write_archive_data(response.json(), path)
+        else:
+            print(f"  Not writing file: status code {response.status_code}")
+
+
+# %%
+if session.is_interactive:
+	download_and_save_raw_archive_data(generate_date_range(2022, 1, 2022, 4))
+
+# %%
