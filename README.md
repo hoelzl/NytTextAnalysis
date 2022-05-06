@@ -38,8 +38,8 @@ directories with (at least) the following keys:
     "app-id": "xxx",
     "api-key": "yyy",
     "data-dir": "path-to-directory-where-data-can-be-stored",
-	"news-dir": "C:/Users/tc/Programming/Python/Tests/NytTextAnalysis/data/news",
-	"url": "https://api.nytimes.com/svc/archive/v1/{year}/{month}.json"
+    "news-dir": "C:/Users/tc/Programming/Python/Tests/NytTextAnalysis/data/news",
+    "url": "https://api.nytimes.com/svc/archive/v1/{year}/{month}.json"
   }
 }
 ```
