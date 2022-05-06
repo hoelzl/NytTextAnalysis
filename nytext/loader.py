@@ -45,7 +45,7 @@ if session.is_interactive and "data_2022_01" not in globals():
 def download_archive_data(months):
     result = []
     for year, month in months:
-        print(f"Trying to load archive data for {year}/{month}...", end="", flush=True)
+        print(f"Trying to download archive data for {year}/{month}...", end="", flush=True)
         try:
             data = download_archive_data_for_month(year, month)
             result.extend(data)

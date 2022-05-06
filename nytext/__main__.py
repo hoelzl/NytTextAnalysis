@@ -17,6 +17,12 @@ def download_archives(
     end_year: int = 2022,
     end_month: int = 1,
 ):
+    """
+    Download article archives into the server's data dictionary.
+
+    The article data for each month is saved to an individual file in the
+    file-system layout expected by the server.
+    """    
     download_and_save_raw_archive_data(
         generate_date_range(start_year, start_month, end_year, end_month)
     )
@@ -24,12 +30,17 @@ def download_archives(
 
 @app.command()
 def download_data(
-    file=Path("data.json"),
+    file: Path = Path("data.json"),
     start_year: int = 2022,
     start_month: int = 1,
     end_year: int = 2022,
     end_month: int = 1,
 ):
+    """
+    Download article data into a file (removing metadata).
+    
+    The data from all months is concatenated into the output file.
+    """
     data = download_archive_data(
         generate_date_range(start_year, start_month, end_year, end_month)
     )
