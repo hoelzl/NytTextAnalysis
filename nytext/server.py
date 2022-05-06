@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from fastapi import FastAPI, Response
 from modulefinder import ModuleFinder
-from  .config import get_archive_file_path
+from .config import get_archive_file_path
 
 app = FastAPI()
 
@@ -10,6 +10,7 @@ app = FastAPI()
 @app.get("/")
 async def status_message():
     return {"status": "running"}
+
 
 @app.get("/news/{year}/{month}")
 async def news(year: int, month: int, response: Response):

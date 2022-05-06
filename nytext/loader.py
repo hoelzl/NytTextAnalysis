@@ -56,6 +56,10 @@ def download_archive_data_for_month(year, month, server_kind=ServerKind.LOCAL):
             f"Invalid request (code {r.status_code}): {r!r}."
         )
 
+# %%
+if session.is_interactive:
+	data_2022_01_local = download_archive_data_for_month(2022, 1, ServerKind.LOCAL)
+	print(f"Local data has {len(data_2022_01_local)} items.")
 
 # %%
 if session.is_interactive and "data_2022_01" not in globals():

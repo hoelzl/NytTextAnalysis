@@ -40,7 +40,7 @@ directories with (at least) the following keys:
     "data-dir": "path-to-directory-where-data-for-local-analysis-can-be-stored",
     "news-dir": "path-to-directory-where-data-for-the-local-server-can-be-stored",
     "remote-url": "https://api.nytimes.com/svc/archive/v1/{year}/{month}.json",
-    "local-url": "http://localhost:8000/{year}/{month}"
+    "local-url": "http://localhost:8000/news/{year}/{month}"
   }
 }
 ```
