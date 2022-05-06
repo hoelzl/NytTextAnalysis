@@ -39,7 +39,8 @@ directories with (at least) the following keys:
     "api-key": "yyy",
     "data-dir": "path-to-directory-where-data-for-local-analysis-can-be-stored",
     "news-dir": "path-to-directory-where-data-for-the-local-server-can-be-stored",
-    "url": "https://api.nytimes.com/svc/archive/v1/{year}/{month}.json"
+    "remote-url": "https://api.nytimes.com/svc/archive/v1/{year}/{month}.json",
+    "local-url": "http://localhost:8000/{year}/{month}"
   }
 }
 ```
@@ -63,7 +64,7 @@ nytext download-archives
 downloads data from the remote server into the directory where the local server
 expects it. (You probably want to define the `news-dir` entry in the
 configuration file for this, otherwise the program tries to write the data into
-the `nytext` installation directory, which may not worked for installed builds.)
+the `nytext` installation directory, which may not work for installed builds.)
 
 ## Extracting some information from the downloaded data
 
@@ -95,6 +96,9 @@ Send a GET request to `http://localhost:8000/docs` to get the OpenAPI
 documentation of the service.
 
 Send a GET request to `http://localhost:8000/` to get a "status message".
+
+Send a GET request to `http://localhost:8000/news/<year>/<month>` to get the
+stored archive for *year* and *month*.
 
 ## Accessing an external news-provider
 

@@ -1,4 +1,5 @@
 # %%
+from enum import Enum, auto
 import json
 from pathlib import Path
 
@@ -12,22 +13,42 @@ project_data = config["nytext"]
 app_id = project_data["app-id"]
 api_key = project_data["api-key"]
 data_dir_path = Path(project_data["data-dir"])
-url_str = project_data["url"]
+remote_url_str = project_data["remote-url"]
+local_url_str = project_data["local-url"]
+
+# %%
+class ServerKind(str, Enum):
+    LOCAL = "local"
+    REMOTE = "remote"
 
 
 # %%
-def download_raw_archive_data_for_month(year, month):
-    # assert year >= 1851
-    # assert 1 <= month <= 12
+def server_url(server_kind: ServerKind):
+    if server_kind == ServerKind.REMOTE:
+        return remote_url_str
+    else:
+        return local_url_str
+
+
+# %%
+if session.is_interactive:
+	print(server_url(ServerKind.LOCAL))
+	print(server_url(ServerKind.REMOTE))
+
+
+# %%
+def download_raw_archive_data_for_month(year, month, server_kind=ServerKind.LOCAL):
+    assert year >= 1851
+    assert 1 <= month <= 12
     return requests.get(
-        url_str.format(year=year, month=month),
+        server_url(server_kind).format(year=year, month=month),
         params={"api-key": api_key},
     )
 
 
 # %%
-def download_archive_data_for_month(year, month):
-    r = download_raw_archive_data_for_month(year, month)
+def download_archive_data_for_month(year, month, server_kind=ServerKind.LOCAL):
+    r = download_raw_archive_data_for_month(year, month, server_kind)
     if 200 <= r.status_code < 300:
         return r.json()["response"].get("docs", [])
     else:
@@ -38,16 +59,21 @@ def download_archive_data_for_month(year, month):
 
 # %%
 if session.is_interactive and "data_2022_01" not in globals():
-    data_2022_01 = download_archive_data_for_month(2022, 1)
+    data_2022_01 = download_archive_data_for_month(2022, 1, ServerKind.REMOTE)
 
 
 # %%
-def download_archive_data(months):
+def download_archive_data(months, server_kind=ServerKind.LOCAL):
     result = []
     for year, month in months:
-        print(f"Trying to download archive data for {year}/{month}...", end="", flush=True)
+        print(
+            f"Trying to download archive data for {year}/{month} from "
+            f"{server_url(server_kind).format(year=year, month=month)!r}...",
+            end="",
+            flush=True,
+        )
         try:
-            data = download_archive_data_for_month(year, month)
+            data = download_archive_data_for_month(year, month, server_kind)
             result.extend(data)
             print(f"got {len(data)} items.")
         except requests.RequestException as ex:
@@ -57,7 +83,7 @@ def download_archive_data(months):
 
 # %%
 if session.is_interactive and "data_2022_01_02" not in globals():
-    data_2022_01_02 = download_archive_data([(2022, 1), (2022, 2)])
+    data_2022_01_02 = download_archive_data([(2022, 1), (2022, 2)], ServerKind.REMOTE)
 
 
 # %%
@@ -96,8 +122,6 @@ default_date_range = generate_date_range(2021, 1, 2022, 4)
 #     large_archive_data = globals()["large_archive_data"]
 
 # %%
-
-
 def write_archive_data(
     data, output_path: Path = data_dir_path / "archive_data.json", indent=2
 ):
@@ -118,13 +142,15 @@ if session.is_interactive:
 
 # %%
 def load_or_download_archive_data(
-    local_path: Path = data_dir_path / "archive_data.json", months=default_date_range
+    local_path: Path = data_dir_path / "archive_data.json",
+    months=default_date_range,
+    server_kind=ServerKind.LOCAL,
 ):
     if local_path.exists():
         with open(local_path, "r", encoding="utf-8") as file:
             return json.load(file)
     else:
-        data = download_archive_data(months)
+        data = download_archive_data(months, server_kind)
         write_archive_data(data, local_path)
         return data
 
@@ -134,15 +160,12 @@ if session.is_interactive:
     large_archive_data = load_or_download_archive_data()
     print(f"Archive data has {len(large_archive_data)} entries.")
 
-# %%
-session.forced_interactive_value = None
-
 
 # %%
 def download_and_save_raw_archive_data(months):
     for year, month in months:
         print(f"Downloading raw archive data for {year}/{month}.")
-        response = download_raw_archive_data_for_month(year, month)
+        response = download_raw_archive_data_for_month(year, month, ServerKind.REMOTE)
         if 200 <= response.status_code < 300:
             path = get_archive_file_path(year, month, check_path_exists=False)
             path.parent.mkdir(exist_ok=True, parents=True)
@@ -154,6 +177,6 @@ def download_and_save_raw_archive_data(months):
 
 # %%
 if session.is_interactive:
-	download_and_save_raw_archive_data(generate_date_range(2022, 1, 2022, 4))
+    download_and_save_raw_archive_data(generate_date_range(2022, 1, 2022, 4))
 
 # %%
